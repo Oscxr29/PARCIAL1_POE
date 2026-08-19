@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca UNIVO - Sistema de Gestión</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Panel Lateral (Controles) -->
+        <aside class="sidebar">
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true">B</span>
+                <div>
+                    <p class="eyebrow">UNIVO / CENTRAL</p>
+                    <h1>Biblioteca</h1>
+                    <p>Gestión de préstamos</p>
+                </div>
+            </div>
+
+            <div class="stats-box">
+                <div class="stat-line"><span>En catálogo</span><strong id="total-libros">0</strong></div>
+                <div class="stat-line"><span>Disponibles</span><strong id="disponibles-libros">0</strong></div>
+            </div>
+
+            <form id="form-libro" class="form-container">
+                <div class="section-heading"><span class="section-index">01</span><h2>Nuevo registro</h2></div>
+                <input type="text" id="titulo" placeholder="Título del libro" aria-label="Título del libro" required>
+                <input type="text" id="autor" placeholder="Autor" aria-label="Autor" required>
+                <select id="categoria" aria-label="Categoría del libro" title="Selecciona la categoría del libro" required>
+                    <option value="" disabled selected>Categoría...</option>
+                    <option value="CIENCIA">Ciencia</option>
+                    <option value="LITERATURA">Literatura</option>
+                    <option value="HISTORIA">Historia</option>
+                    <option value="TECNOLOGIA">Tecnología</option>
+                    <option value="ARTE">Arte</option>
+                </select>
+                <div class="input-row">
+                    <label><span>Ejemplares</span><input type="number" id="ejemplares" min="1" required></label>
+                    <label><span>Año</span><input type="number" id="anio" min="1000" max="2026" required></label>
+                </div>
+                <button type="submit" class="btn-primary"><span>+</span> Añadir al catálogo</button>
+            </form>
+
+            <div class="filters-container">
+                <div class="section-heading"><span class="section-index">02</span><h2>Explorar</h2></div>
+                <select id="filtro-categoria" aria-label="Filtrar por categoría" title="Filtrar por categoría">
+                    <option value="TODOS">Todas las categorías</option>
+                    <option value="CIENCIA">Ciencia</option>
+                    <option value="LITERATURA">Literatura</option>
+                    <option value="HISTORIA">Historia</option>
+                    <option value="TECNOLOGIA">Tecnología</option>
+                    <option value="ARTE">Arte</option>
+                </select>
+                <select id="orden-libros" aria-label="Ordenar catálogo">
+                    <option value="defecto">Orden original</option>
+                    <option value="titulo">Título A-Z</option>
+                    <option value="autor">Autor A-Z</option>
+                </select>
+                <button id="btn-solo-disponibles" class="btn-outline" type="button">Solo disponibles</button>
+            </div>
+        </aside>
+
+        <!-- Área Principal (Catálogo y Notificaciones) -->
+        <main class="main-content">
+            <div id="area-mensajes" class="notificaciones-container"></div>
+            
+            <div class="catalogo-header">
+                <div>
+                    <p class="eyebrow">COLECCIÓN ACTIVA</p>
+                    <h2>Catálogo de libros</h2>
+                </div>
+                <label class="search-box">
+                    <span aria-hidden="true">⌕</span>
+                    <input id="buscar-libros" type="search" placeholder="Buscar título o autor..." aria-label="Buscar título o autor">
+                </label>
+            </div>
+            
+            <div id="contenedor-libros" class="grid-libros">
+                <!-- Las tarjetas de libros se inyectarán aquí -->
+            </div>
+        </main>
+    </div>
+
+    <!-- El script compilado -->
+    <script src="app.js" defer></script>
+</body>
+</html>
