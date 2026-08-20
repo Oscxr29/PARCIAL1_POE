@@ -48,6 +48,7 @@ interface Libro {
     anio: number;
     disponible: boolean;
     ejemplares: number;
+    ejemplaresTotales: number;
     esFavorito: boolean;
 }
 
@@ -67,11 +68,14 @@ class Biblioteca extends EventEmitter {
     }
 
     // 2.2 Implementa agregarLibro
-    public agregarLibro(libroData: Omit<Libro, 'id' | 'disponible' | 'esFavorito'>): void {
+    public agregarLibro(libroData: Omit<Libro, 'id' | 'disponible' | 'ejemplaresTotales' | 'esFavorito'>): void {
+        const ejemplares = Number(libroData.ejemplares);
         const nuevoLibro: Libro = {
             ...libroData,
             id: this._idCounter++,
-            disponible: libroData.ejemplares > 0,
+            ejemplares,
+            ejemplaresTotales: ejemplares,
+            disponible: ejemplares > 0,
             esFavorito: false
         };
         this.libros.push(nuevoLibro);
@@ -83,7 +87,7 @@ class Biblioteca extends EventEmitter {
         const libro = this.libros.find(l => l.id === id);
         if (libro && libro.ejemplares > 0) {
             libro.ejemplares--;
-            if (libro.ejemplares === 0) libro.disponible = false;
+            libro.disponible = libro.ejemplares > 0;
             this.emitirCambio("prestamoExitoso", libro);
         } else if (libro) {
             this.emit("noDisponible", libro);
@@ -93,9 +97,9 @@ class Biblioteca extends EventEmitter {
     // 2.4 Implementa devolverLibro
     public devolverLibro(id: number): void {
         const libro = this.libros.find(l => l.id === id);
-        if (libro) {
+        if (libro && libro.ejemplares < libro.ejemplaresTotales) {
             libro.ejemplares++;
-            libro.disponible = true; // Si se devuelve uno, ya está disponible
+            libro.disponible = libro.ejemplares > 0;
             this.emitirCambio("devolucionExitosa", libro);
         }
     }
@@ -131,11 +135,8 @@ class Biblioteca extends EventEmitter {
     }
 
     private emitirCambio(evento: string, libro: Libro): void {
-        try {
-            this.emit(evento, libro);
-        } finally {
-            this.sincronizarStorage();
-        }
+        this.sincronizarStorage();
+        this.emit(evento, libro);
     }
 
     private sincronizarStorage(): void {
@@ -156,6 +157,8 @@ class Biblioteca extends EventEmitter {
             && CATEGORIAS.includes(libro.categoria as CategoriaLibro)
             && Number.isInteger(libro.anio)
             && Number.isInteger(libro.ejemplares) && (libro.ejemplares as number) >= 0
+            && Number.isInteger(libro.ejemplaresTotales)
+            && (libro.ejemplaresTotales as number) >= (libro.ejemplares as number)
             && typeof libro.disponible === "boolean"
             && typeof libro.esFavorito === "boolean";
     }
@@ -199,7 +202,7 @@ class GestorUIBiblioteca {
         this.contenedorLibros.innerHTML = '';
         
         if (libros.length === 0) {
-            this.contenedorLibros.innerHTML = '<div class="empty-state"><strong>No encontramos libros</strong><span>Prueba con otra búsqueda o cambia los filtros.</span></div>';
+            this.contenedorLibros.innerHTML = '<div class="empty-state">No se encontraron libros que coincidan con la búsqueda.</div>';
             return;
         }
 
@@ -209,6 +212,8 @@ class GestorUIBiblioteca {
             
             const estadoClase = libro.disponible ? 'disponible' : 'agotado';
             const estadoTexto = libro.disponible ? `${libro.ejemplares} disp.` : 'Agotado';
+            const sinStock = libro.ejemplares === 0;
+            const sinDevolucion = libro.ejemplares >= libro.ejemplaresTotales;
             const favClase = libro.esFavorito ? 'btn-favorito active' : 'btn-favorito';
             const favIcono = libro.esFavorito ? '★' : '☆';
             const titulo = escapeHTML(libro.titulo);
@@ -224,8 +229,8 @@ class GestorUIBiblioteca {
                     <span class="${estadoClase}">${estadoTexto}</span>
                 </div>
                     <div class="card-actions" data-book-id="${libro.id}">
-                        <button class="btn-primary" data-action="prestar" ${!libro.disponible ? 'disabled' : ''}>Prestar</button>
-                        <button class="btn-secondary" data-action="devolver">Devolver</button>
+                        <button class="btn-primary" data-action="prestar" ${sinStock ? 'disabled' : ''}>${sinStock ? 'Sin Stock' : 'Prestar'}</button>
+                        <button class="btn-secondary" data-action="devolver" ${sinDevolucion ? 'disabled' : ''}>Devolver</button>
                         <button class="${favClase}" data-action="favorito" aria-label="${libro.esFavorito ? 'Quitar de favoritos' : 'Añadir a favoritos'}" title="${libro.esFavorito ? 'Quitar de favoritos' : 'Añadir a favoritos'}">${favIcono}</button>
                 </div>
             `;
@@ -301,12 +306,13 @@ const app = {
         categoria: 'TODOS' as CategoriaFiltro,
         orden: 'defecto' as OrdenOption,
         soloDisponibles: false,
+        soloFavoritos: false,
         busqueda: ''
     },
 
     inicializar: () => {
         // Datos de prueba (de la rúbrica)
-        const librosIniciales: Omit<Libro, 'id' | 'disponible' | 'esFavorito'>[] = [
+        const librosIniciales: Omit<Libro, 'id' | 'disponible' | 'ejemplaresTotales' | 'esFavorito'>[] = [
             { titulo: "El Principito", autor: "Antoine de Saint-Exupéry", categoria: "LITERATURA" as CategoriaLibro, anio: 1943, ejemplares: 5 },
             { titulo: "Cien años de soledad", autor: "Gabriel García Márquez", categoria: "LITERATURA" as CategoriaLibro, anio: 1967, ejemplares: 3 },
             { titulo: "Fahrenheit 451", autor: "Ray Bradbury", categoria: "LITERATURA" as CategoriaLibro, anio: 1953, ejemplares: 0 },
@@ -345,7 +351,7 @@ const app = {
             app.actualizarVista();
         });
 
-        document.getElementById('orden-libros')?.addEventListener('change', (e) => {
+        document.getElementById('filtro-orden')?.addEventListener('change', (e) => {
             app.filtros.orden = (e.target as HTMLSelectElement).value as OrdenOption;
             app.actualizarVista();
         });
@@ -358,7 +364,24 @@ const app = {
         document.getElementById('btn-solo-disponibles')?.addEventListener('click', (e) => {
             app.filtros.soloDisponibles = !app.filtros.soloDisponibles;
             const btn = e.target as HTMLButtonElement;
-            btn.classList.toggle('active');
+            btn.classList.toggle('active', app.filtros.soloDisponibles);
+            app.actualizarVista();
+        });
+
+        document.getElementById('btn-solo-favoritos')?.addEventListener('click', (e) => {
+            app.filtros.soloFavoritos = !app.filtros.soloFavoritos;
+            const btn = e.target as HTMLButtonElement;
+            btn.classList.toggle('active', app.filtros.soloFavoritos);
+            app.actualizarVista();
+        });
+
+        document.getElementById('btn-limpiar-filtros')?.addEventListener('click', () => {
+            app.filtros = { categoria: 'TODOS', orden: 'defecto', soloDisponibles: false, soloFavoritos: false, busqueda: '' };
+            (document.getElementById('filtro-categoria') as HTMLSelectElement).value = 'TODOS';
+            (document.getElementById('filtro-orden') as HTMLSelectElement).value = 'defecto';
+            (document.getElementById('buscar-libros') as HTMLInputElement).value = '';
+            document.getElementById('btn-solo-disponibles')?.classList.remove('active');
+            document.getElementById('btn-solo-favoritos')?.classList.remove('active');
             app.actualizarVista();
         });
 
@@ -383,20 +406,23 @@ const app = {
     actualizarVista: () => {
         let librosActuales = biblioteca.getLibros();
 
-        // Aplicar filtro de disponibilidad
-        if (app.filtros.soloDisponibles) {
-            librosActuales = librosActuales.filter(l => l.disponible);
-        }
-
-        // Aplicar filtro de categoría
-        if (app.filtros.categoria !== 'TODOS') {
-            librosActuales = librosActuales.filter(l => l.categoria === app.filtros.categoria);
-        }
-
+        // Aplicar filtros en el orden de búsqueda, categoría, disponibilidad y favoritos.
         if (app.filtros.busqueda) {
             librosActuales = librosActuales.filter(l =>
                 `${l.titulo} ${l.autor}`.toLocaleLowerCase().includes(app.filtros.busqueda)
             );
+        }
+
+        if (app.filtros.categoria !== 'TODOS') {
+            librosActuales = librosActuales.filter(l => l.categoria === app.filtros.categoria);
+        }
+
+        if (app.filtros.soloDisponibles) {
+            librosActuales = librosActuales.filter(l => l.disponible);
+        }
+
+        if (app.filtros.soloFavoritos) {
+            librosActuales = librosActuales.filter(l => l.esFavorito);
         }
 
         // Aplicar orden

@@ -53,12 +53,16 @@
                     <option value="TECNOLOGIA">Tecnología</option>
                     <option value="ARTE">Arte</option>
                 </select>
-                <select id="orden-libros" aria-label="Ordenar catálogo">
+                <select id="filtro-orden" aria-label="Ordenar catálogo" title="Ordenar catálogo">
                     <option value="defecto">Orden original</option>
-                    <option value="titulo">Título A-Z</option>
-                    <option value="autor">Autor A-Z</option>
+                    <option value="titulo">Título (A-Z)</option>
+                    <option value="autor">Autor (A-Z)</option>
                 </select>
-                <button id="btn-solo-disponibles" class="btn-outline" type="button">Solo disponibles</button>
+                <div class="filter-toggles">
+                    <button id="btn-solo-disponibles" class="btn-filter" type="button">Solo disponibles</button>
+                    <button id="btn-solo-favoritos" class="btn-filter" type="button">★ Mis Favoritos</button>
+                </div>
+                <button id="btn-limpiar-filtros" class="btn-ghost" type="button">🔄 Limpiar filtros</button>
             </div>
         </aside>
 

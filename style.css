@@ -51,7 +51,12 @@ button:hover:not(:disabled) { transform: translateY(-1px); }
 .btn-secondary { background: transparent; border-color: var(--line); color: var(--text); }
 .btn-secondary:hover:not(:disabled) { background: rgba(255, 255, 255, .05); border-color: var(--muted); }
 .btn-outline { background: transparent; border-color: var(--cyan); color: var(--cyan); }
-.btn-outline:hover:not(:disabled), .btn-outline.active, #btn-solo-disponibles.active { background: var(--cyan); border-color: var(--cyan); color: var(--bg); }
+.btn-outline:hover:not(:disabled) { background: var(--cyan); border-color: var(--cyan); color: var(--bg); }
+.filter-toggles { display: flex; gap: .5rem; }
+.btn-filter { background: var(--card); border-color: var(--line); color: var(--text); flex: 1; font-size: .8rem; padding: .55rem; }
+.btn-filter:hover:not(:disabled), .btn-filter.active { background: rgba(56, 189, 248, .15); border-color: var(--cyan); color: var(--cyan); }
+.btn-ghost { background: transparent; border: 1px dashed var(--line); color: var(--muted); font-size: .8rem; padding: .5rem; width: 100%; }
+.btn-ghost:hover:not(:disabled) { border-color: var(--lime); color: var(--text); }
 .btn-primary span { font-size: 1.1rem; line-height: 0; vertical-align: -1px; }
 
 .catalogo-header { align-items: end; border-bottom: 1px solid var(--line); display: flex; gap: 2rem; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; }
@@ -73,8 +78,8 @@ button:hover:not(:disabled) { transform: translateY(-1px); }
 .card-actions { display: grid; gap: .45rem; grid-template-columns: 1fr 1fr 2.5rem; }
 .card-actions button { min-height: 2.35rem; padding: .45rem .35rem; }
 .btn-favorito { background: transparent; border-color: rgba(250, 204, 21, .65); color: #facc15; font-size: 1.1rem; }
-.btn-favorito.active { background-color: rgba(250, 204, 21, .1) !important; border-color: #facc15 !important; color: #facc15 !important; }
-.empty-state { border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); display: grid; gap: .4rem; padding: 3rem; text-align: center; }
+.btn-favorito.active, .btn-fav.active { background-color: rgba(250, 204, 21, .1) !important; border-color: #facc15 !important; color: #facc15 !important; }
+.empty-state { background: var(--card); border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); display: grid; gap: .4rem; grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; }
 .empty-state strong { color: var(--text); font-size: 1.1rem; }
 
 .notificaciones-container { display: flex; flex-direction: column; gap: .5rem; position: fixed; right: 1.5rem; top: 1.5rem; z-index: 10; }
